@@ -1,0 +1,153 @@
+<patch-1.0 appVersion="1.0.12">
+   <obj type="rbrt/midi/in/monitor" uuid="64b3d36e-97ab-4b18-91f7-ff611e14fd7a" name="monitor_1" x="126" y="70">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="rbrt/midi/out/vel send 4" uuid="89799ba7-ac28-4c9a-a155-8492609fa402" name="vel_1" x="504" y="70">
+      <params>
+         <int32 name="startnote" value="41"/>
+      </params>
+      <attribs>
+         <combo attributeName="device" selection="usb host port 1"/>
+         <spinner attributeName="channel" value="9"/>
+      </attribs>
+   </obj>
+   <obj type="ctrl/i" uuid="a3786816db6ea5bc6ac4193a5cccdb2c83b83496" name="i_1" x="392" y="84">
+      <params>
+         <int32 name="value" value="35"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="disp/bool" uuid="a0ee71d48208b71752cbb8c05e55145106ef3946" name="bool_1" x="252" y="112">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="disp/note" uuid="ce3190ad98b73b468f22221f555b01feee03226a" name="note_2" x="168" y="196">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="rbrt/midi/in/poly cc 8 FULL" uuid="22ec1529-b131-4e0d-87f2-32998301c713" name="poly_2" x="574" y="266">
+      <params>
+         <int32 name="startcc" value="104"/>
+      </params>
+      <attribs/>
+   </obj>
+   <obj type="logic/flipflop toggle" uuid="195e489e5fc3d275944b0de56c7a91c8641ea22a" name="flipflop_2" x="728" y="266">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="rbrt/midi/out/cc send 4" uuid="29673ede-ad04-49ea-bb7a-3ecf7cdcf098" name="cc_1" x="868" y="266">
+      <params>
+         <int32 name="startcc" value="104"/>
+      </params>
+      <attribs>
+         <combo attributeName="device" selection="usb host port 1"/>
+         <spinner attributeName="channel" value="9"/>
+      </attribs>
+   </obj>
+   <patchobj type="patch/object" uuid="7987629a-c23e-4fac-a889-c421db40b527" name="poly_1" x="84" y="280">
+      <params>
+         <int32 name="startnote" value="41"/>
+      </params>
+      <attribs/>
+      <object id="patch/object" uuid="7987629a-c23e-4fac-a889-c421db40b527">
+         <sDescription>outputs the state of 8 notes,starting from &apos;startnote&apos;.</sDescription>
+         <author>robert schirmer</author>
+         <license>BSD</license>
+         <inlets>
+            <int32 name="startnote"/>
+         </inlets>
+         <outlets>
+            <bool32 name="g0"/>
+            <bool32 name="g1"/>
+            <bool32 name="g2"/>
+            <bool32 name="g3"/>
+            <bool32 name="g4"/>
+            <bool32 name="g5"/>
+            <bool32 name="g6"/>
+            <bool32 name="g7"/>
+         </outlets>
+         <displays/>
+         <params>
+            <int32 name="startnote" noLabel="true">
+               <MinValue i="0"/>
+               <MaxValue i="127"/>
+            </int32>
+         </params>
+         <attribs/>
+         <includes/>
+         <code.declaration><![CDATA[bool gate [128];
+uint8_t start;]]></code.declaration>
+         <code.krate><![CDATA[start = (param_startnote + inlet_startnote);
+
+
+outlet_g0 = gate[start];
+outlet_g1 = gate[start +1];
+outlet_g2 = gate[start +2];
+outlet_g3 = gate[start +3];
+
+outlet_g4 = gate[start +4];
+outlet_g5 = gate[start +5];
+outlet_g6 = gate[start +6];
+outlet_g7 = gate[start +7];]]></code.krate>
+         <code.midihandler><![CDATA[if ((status == MIDI_NOTE_ON + attr_midichannel) && (data2)) 
+gate [data1] = 1;
+if (((status == MIDI_NOTE_ON + attr_midichannel) && (!data2))||(status == MIDI_NOTE_OFF + attr_midichannel))
+gate [data1] = 0;]]></code.midihandler>
+      </object>
+   </patchobj>
+   <obj type="logic/flipflop toggle" uuid="195e489e5fc3d275944b0de56c7a91c8641ea22a" name="flipflop_1" x="252" y="280">
+      <params/>
+      <attribs/>
+   </obj>
+   <obj type="rbrt/midi/out/note send 4" uuid="0ba581a2-7654-4580-b6cb-58d8e172572a" name="note_1" x="392" y="280">
+      <params>
+         <int32 name="startnote" value="41"/>
+      </params>
+      <attribs>
+         <combo attributeName="device" selection="usb host port 1"/>
+         <spinner attributeName="channel" value="9"/>
+         <spinner attributeName="velon" value="127"/>
+         <spinner attributeName="veloff" value="0"/>
+      </attribs>
+   </obj>
+   <nets>
+      <net>
+         <source obj="flipflop_1" outlet="o"/>
+         <dest obj="note_1" inlet="g0"/>
+         <dest obj="bool_1" inlet="in"/>
+      </net>
+      <net>
+         <source obj="poly_1" outlet="g0"/>
+         <dest obj="flipflop_1" inlet="trig"/>
+      </net>
+      <net>
+         <source obj="i_1" outlet="out"/>
+         <dest obj="vel_1" inlet="v0"/>
+      </net>
+      <net>
+         <source obj="poly_2" outlet="cc0"/>
+         <dest obj="flipflop_2" inlet="trig"/>
+      </net>
+      <net>
+         <source obj="flipflop_2" outlet="o"/>
+         <dest obj="cc_1" inlet="v0"/>
+      </net>
+   </nets>
+   <settings>
+      <subpatchmode>no</subpatchmode>
+      <MidiChannel>9</MidiChannel>
+      <NPresets>8</NPresets>
+      <NPresetEntries>32</NPresetEntries>
+      <NModulationSources>8</NModulationSources>
+      <NModulationTargetsPerSource>8</NModulationTargetsPerSource>
+      <Author></Author>
+   </settings>
+   <notes><![CDATA[]]></notes>
+   <windowPos>
+      <x>51</x>
+      <y>27</y>
+      <width>1219</width>
+      <height>688</height>
+   </windowPos>
+</patch-1.0>
